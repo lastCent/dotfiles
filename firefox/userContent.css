@@ -1,0 +1,19 @@
+/* Dark new tab*/
+
+@-moz-document url(about:newtab) {
+    .activity-stream {
+        background-color: #1f1f1f !important;
+    }
+    .top-sites-list .top-site-outer > a {
+        color: #ebdbb2 !important;
+    }
+    .tile {
+      filter: grayscale(42%) !important;
+      opacity: .9 !important;
+    }
+    @media (min-width: 1280px) {
+      .activity-stream main {
+        width: : 989px !important;
+      }
+    }
+}
