@@ -2,39 +2,53 @@
 
 # Define the clock
 Clock() {
-        DATETIME=$(date "+%a %b %d, %R")
-        echo -n "$DATETIME"
+        DATETIME=$(date "+%a %b %d \ue015 %R")
+        echo -e "$DATETIME"
 }
 
 #Define the battery
 Battery() {
+	# Get charger info
+	CHARGER=$(acpi --ac-adapter)
+	if [ "$CHARGER" = "Adapter 0: on-line" ]; then
+		 C_ICON="\ue20e"
+	else
+		C_ICON="\ue20f"
+	fi
+	# Get battery info
         BATPERC=$(acpi --battery | cut -d, -f2)
 	BATINT=${BATPERC::-1}
 	BAT_COL=""
+	BAT_ICON=""
 	if [ $BATINT -gt 75 ]; then
 		BAT_COL="#98971a"
+		BAT_ICON="\ue214"
 	elif [ $BATINT -gt 50 ]; then
 		BAT_COL="#fabd2f"
+		BAT_ICON="\ue213"
 	elif [ $BATINT -gt 25 ]; then
 		BAT_COL="#b16286"
+		BAT_ICON="\ue212"
 	else
 		BAT_COL="#cc241d"
+		BAT_ICON="\ue211"
 	fi
-        echo "Battery:%{F$BAT_COL}$BATPERC%{F-}"
+        echo -e "$BAT_ICON$C_ICON%{F$BAT_COL}$BATPERC%{F-}"
 }
 
 #Define disc stats
 Disk() {
-	ArchD="Main: $(df -h -P | grep /dev/sdb3 | cut --fields=16 --delimiter=' ')"
-	ShareD="Share: $(df -h -P | grep /dev/sda1 | cut --fields=15 --delimiter=' ')"
-	echo "$ArchD $ShareD"
+	ArchD="\ue1f0 $(df -h -P | grep /dev/sdb3 | cut --fields=16 --delimiter=' ')"
+	ShareD="\ue1bb $(df -h -P | grep /dev/sda1 | cut --fields=15 --delimiter=' ')"
+	echo -e "$ArchD $ShareD"
 }
 
 #Define network status
 Network() {
-	CONNECTION="Wifi: $(nmcli -t connection show --active | cut --fields=1 --delimiter=':')"
+	CONNECTION="\ue048 $(nmcli -t connection show --active | cut --fields=1 --delimiter=':')"
 	STATUS="$(nmcli networking connectivity)"
 	STAT_COL=""
+	CON_STAT="$(nmcli -t general status | cut --fields=1 --delimiter=':')"
 	if [ "$STATUS" = "full"  ]; then
 		STAT_COL="#98971a"
 	elif [ "$STATUS" = "limited" ]; then
@@ -44,34 +58,55 @@ Network() {
 	else
 		STAT_COL="#b16286"
 	fi
-	echo "$CONNECTION %{F$STAT_COL}$STATUS%{F-}"
+	if [ "$CON_STAT" != "connecting" ]; then
+		CON_STAT=""	
+	fi
+	echo -e "$CONNECTION %{F$STAT_COL}$STATUS $CON_STAT%{F-}"
 }
 
 #Define the workspace display
 WorkSpace() {
 	WSPACE=$(xprop -root _NET_CURRENT_DESKTOP | sed -e 's/_NET_CURRENT_DESKTOP(CARDINAL) = //')
+	NUMSEL=""
 	if [ "$WSPACE" = "0" ]; then
-		echo "%{B#cc241d}1%{B-} 2 3 4 5 6 7 8 9 0"
+		NUMSEL="%{B#333333}%{+o}1%{-o}%{B-} 2 3 4 5 6 7 8 9 0"
 	elif [ "$WSPACE" = "1" ]; then 
-		echo "1 %{B#cc241d}2%{B-} 3 4 5 6 7 8 9 0"
+		NUMSEL="1 %{B#333333}%{+o}2%{-o}%{B-} 3 4 5 6 7 8 9 0"
 	elif [ "$WSPACE" = "2" ]; then 
-		echo "1 2 %{B#cc241d}3%{B-} 4 5 6 7 8 9 0"
+		NUMSEL="1 2 %{B#333333}%{+o}3%{-o}%{B-} 4 5 6 7 8 9 0"
 	elif [ "$WSPACE" = "3" ]; then 
-		echo "1 2 3 %{B#cc241d}4%{B-} 5 6 7 8 9 0"
+		NUMSEL="1 2 3 %{B#333333}%{+o}4%{-o}%{B-} 5 6 7 8 9 0"
 	elif [ "$WSPACE" = "4" ]; then
-		echo "1 2 3 4 %{B#cc241d}5%{B-} 6 7 8 9 0"
+		NUMSEL="1 2 3 4 %{B#333333}%{+o}5%{-o}%{B-} 6 7 8 9 0"
 	elif [ "$WSPACE" = "5" ]; then 
-		echo "1 2 3 4 5 %{B#cc241d}6%{B-} 7 8 9 0"
+		NUMSEL="1 2 3 4 5 %{B#333333}%{+o}6%{-o}%{B-} 7 8 9 0"
 	elif [ "$WSPACE" = "6" ]; then
-		echo "1 2 3 4 5 6 %{B#cc241d}7%{B-} 8 9 0"
+		NUMSEL="1 2 3 4 5 6 %{B#333333}%{+o}7%{-o}%{B-} 8 9 0"
 	elif [ "$WSPACE" = "7" ]; then 
-		echo "1 2 3 4 5 6 7 %{B#cc241d}8%{B-} 9 0"
+		NUMSEL="1 2 3 4 5 6 7 %{B#333333}%{+o}8%{-o}%{B-} 9 0"
 	elif [ "$WSPACE" = "8" ]; then
-		echo "1 2 3 4 5 6 7 8 %{B#cc241d}9%{B-} 0"
+		NUMSEL="1 2 3 4 5 6 7 8 %{B#333333}%{+o}9%{-o}%{B-} 0"
 	elif [ "$WSPACE" = "9" ]; then
-		echo "1 2 3 4 5 6 7 8 9 %{B#cc241d}0%{B-}"
+		NUMSEL="1 2 3 4 5 6 7 8 9 %{B#333333}%{+o}0%{-o}%{B-}"
 	fi
+	echo "%{U#999999}$NUMSEL%{U-}"
 }
+
+#Get volume information
+Volume() {
+	MUTESTATE=$(pactl list sinks | grep "Mute:")
+	if [ "$MUTESTATE" = "	Mute: no" ]; then
+		V_SYMBOL="\ue050"
+	else
+		V_SYMBOL="\ue04f"
+	fi
+	V_PERCENT=$(pactl list sinks | grep "Volume" | cut -d " " -f 6 | cut -d $'\n' -f 1 )
+	echo -e "%{T2}$V_SYMBOL%{T-} $V_PERCENT"
+}
+
+#SLOWSTUFF=""
+#while :; do echo -e "%{r}  $(Disk) | $(Clock) | $(Battery)"; sleep 30; done > $SLOWSTUFF & 
+#while :; do echo -e "%{l} \ue0dd $(WorkSpace) $(Volume) %{c} $(Network)  $SLOWSTUFF"; sleep 1; done &
 
 declare -i COUNTER=60
 while true; do
@@ -79,9 +114,8 @@ while true; do
 		SLOWSTUFF="%{r}  $(Disk) | $(Clock) | $(Battery)"
 		COUNTER=0 
 	fi
-        echo "%{l} $(WorkSpace) %{c} $(Network)  $SLOWSTUFF"
+        echo -e "%{l} \ue0dd $(WorkSpace) | $(Volume) %{c} $(Network)  $SLOWSTUFF"
         ((COUNTER=COUNTER+1))
 	sleep 1s
-	#TODO: add state (connecting)
 done
 
