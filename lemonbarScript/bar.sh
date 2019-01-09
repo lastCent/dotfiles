@@ -38,15 +38,18 @@ Battery() {
 
 #Define disc stats
 Disk() {
-	ArchD="\ue1f0 $(df -h -P | grep /dev/sdb3 | cut --fields=16 --delimiter=' ')"
-	ShareD="\ue1bb $(df -h -P | grep /dev/sda1 | cut --fields=15 --delimiter=' ')"
-	echo -e "$ArchD $ShareD"
+	ArchS="\ue1f0"
+	ShareS="\ue1bb"
+	ArchD="$(df -h --output=pcent '/dev/sdb3' | tail -n 1)"
+	ShareD="$(df -h --output=pcent '/dev/sda1' | tail -n 1)"
+	echo -e "$ArchS$ArchD $ShareS$ShareD"
 }
 
 #Define network status
 Network() {
-	CONNECTION="\ue048 $(nmcli -t connection show --active | cut --fields=1 --delimiter=':')"
+	CONNECTION="\ue048 $(nmcli -t connection show --active | cut --fields=1 --delimiter=':' | tail -n1)"
 	STATUS="$(nmcli networking connectivity)"
+	VPN_CON="$(ip a | grep 'mullvad' | cut --fields=2 --delimiter=' ' | cut --fields=1 --delimiter=$'\n')"
 	STAT_COL=""
 	CON_STAT="$(nmcli -t general status | cut --fields=1 --delimiter=':')"
 	if [ "$STATUS" = "full"  ]; then
@@ -61,7 +64,7 @@ Network() {
 	if [ "$CON_STAT" != "connecting" ]; then
 		CON_STAT=""	
 	fi
-	echo -e "$CONNECTION %{F$STAT_COL}$STATUS $CON_STAT%{F-}"
+	echo -e "$CONNECTION [$VPN_CON] %{F$STAT_COL}$STATUS $CON_STAT%{F-}"
 }
 
 #Define the workspace display
